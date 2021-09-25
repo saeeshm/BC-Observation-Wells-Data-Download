@@ -11,8 +11,15 @@ import re
 import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
+from io import StringIO
+from sqlalchemy import create_engine
 
 # %% ==== Initializing global variables ====
+
+# Database connection
+db = create_engine('postgresql+psycopg2://saeesh:admin@localhost:5432/gws?options=-csearch_path%3Dobswell')
+conn = db.raw_connection()
+cursor = conn.cursor()
 
 # The path to the directory where the the update report from each run should be
 # stored. Defaults to the working directory
@@ -42,8 +49,8 @@ dat_tab = soup.find(name='table')
 df = pd.read_html(str(dat_tab), na_values=' ', keep_default_na=False)[0]
 # Getting only the filename column as a list
 nameList = df.Name.dropna().to_list()
-# Filtering only those names where the '-data.csv' tag is present
-datNames = [name for name in nameList if re.search('-data\\.csv$', name)]
+# Filtering only those names where the '-recent.csv' tag is present
+datNames = [name for name in nameList if re.search('-recent\\.csv$', name)]
 
 # ==== Creating dictionaries to store request status + error messages ====
 datStatus = {name: '' for name in datNames}
@@ -54,6 +61,8 @@ datError = {name: '' for name in datNames}
 # For each name in the list of names
 for name in datNames:
     try:
+        # Initialize an empty string buffer
+        sio = StringIO()
         # Creating the url for this dataset
         url = 'https://www.env.gov.bc.ca/wsd/data_searches/obswell/map/data/' + name
         # Getting the data
@@ -68,14 +77,31 @@ for name in datNames:
         df = pd.DataFrame(text_list[1:], columns=text_list[0])
         # Ensuring type consistency
         df = df.astype(dtype_dict)
-        # Appending to a csv
-        df.to_csv('ObsWellHourly.csv',
-                  mode='a',
-                  # Not including the row index
-                  index=False,
-                  # Only including the header for the first table, otherwise not
-                  header=(name == datNames[0])
-                  )
+
+        # Querying only "recent" data already present in the table
+        cursor.execute(
+            """select * from obswell.hourly 
+            where "myLocation" = '{}'
+            and "Time" >= '{}'
+            order by "Time" """.format(
+                name.replace("-recent.csv", ""), 
+                min(df.Time).strftime("%Y-%m-%d")
+            )
+        )
+        # Reading the result
+        curr_data = pd.DataFrame(cursor.fetchall(), columns=df.columns.array)
+
+        # Set differencing to only get timestamps that are new
+        index = list(set(df.Time).difference(set(curr_data.Time)))
+        # Filtering the dataframe with it to only get the rows that need to be added
+        update = df[df.Time.isin(index)]
+        
+        # Writing data to buffer
+        update.to_csv(sio, sep = ',', index=False, header=None, columns = df.columns.array)
+        sio.seek(0)
+        # Appending to database from from buffer
+        cursor.copy_from(sio, "hourly", sep = ',')
+        conn.commit()
         # Status print
         print('Completed download for ' + name)
     except Exception as e:
