@@ -1,5 +1,5 @@
 # BC-Observation-Wells-Data-Download
-A collection of scripts that download all well data from the BC Provincial Observation Well Network(https://catalogue.data.gov.bc.ca/dataset/provincial-groundwater-observation-well-network-groundwater-levels-data/resource/43398efb-5646-4dcc-bf61-1f6def0a7c63), collecting them into a PostgresSQL database. The data are stored at [this location](https://www.env.gov.bc.ca/wsd/data_searches/obswell/map/data/). The program is designed to be running periodically and regularly update the database as new data becomes available.
+A collection of scripts that download all well data from the [BC Provincial Observation Well Network](https://catalogue.data.gov.bc.ca/dataset/provincial-groundwater-observation-well-network-groundwater-levels-data/resource/43398efb-5646-4dcc-bf61-1f6def0a7c63), collecting them into a PostgresSQL database. The data are stored at [this location](https://www.env.gov.bc.ca/wsd/data_searches/obswell/map/data/). The program is designed to be running periodically and regularly update the database as new data becomes available.
 
 ## Structure
 The program contains 3 primary files, for the following uses
