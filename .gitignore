@@ -1,4 +1,5 @@
 archive/
 *.lnk
 *.csv
+*.bat
 credentials.json
