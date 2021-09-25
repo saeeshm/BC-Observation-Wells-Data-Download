@@ -13,11 +13,26 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from io import StringIO
 from sqlalchemy import create_engine
+from json import load
 
 # %% ==== Initializing global variables ====
 
+# Reading credentials from file
+creds = load(open('credentials.json',))
+
+# Setting the default schema to 'obswell' unless another was specified in the file
+if 'schema' not in creds.keys():
+    creds['schema'] = 'obswell'
+
 # Database connection
-db = create_engine('postgresql+psycopg2://saeesh:admin@localhost:5432/gws?options=-csearch_path%3Dobswell')
+db = create_engine('postgresql+psycopg2://{}:{}@{}:{}/{}?options=-csearch_path%3D{}'.format(
+    creds['user'],
+    creds['password'],
+    creds['host'],
+    creds['port'],
+    creds['dbname'],
+    creds['schema'],
+))
 conn = db.raw_connection()
 cursor = conn.cursor()
 

@@ -2,9 +2,9 @@
 
 This file gives a summary of the most BC
 Observation well dataset update, run via
-the script "obswell_scraping.py"
+the script "obswell_scraping_*.py"
 
-Last scrape:  2021-08-06 15:28:59.265829
+Last scrape:  2021-09-24 20:38:52.052360
 
 All data links valid: True
 
