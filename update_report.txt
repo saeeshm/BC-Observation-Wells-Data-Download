@@ -1,0 +1,12 @@
+===== BC Observation Wells Data Scraper =====
+
+This file gives a summary of the most BC
+Observation well dataset update, run via
+the script "obswell_scraping.py"
+
+Last scrape:  2021-08-06 15:28:59.265829
+
+All data links valid: True
+
+All downloads and data formatting was error free: True
+
